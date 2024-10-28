@@ -2,9 +2,12 @@ const Transaction = require('../models/Transaction');
 
 // function to get the start and end of a given month
 const getMonthDateRange = (month) => {
-  const startDate = new Date(`${month}-01T00:00:00Z`); 
-  const endDate = new Date(startDate);  
-  endDate.setMonth(endDate.getMonth() + 1);  // Set end date to next month
+  // Using the current year to avoid year dependence
+  const currentYear = new Date().getFullYear();
+  
+  // Create start and end dates for the given month
+  const startDate = new Date(Date.UTC(currentYear, month, 1, 0, 0, 0)); 
+  const endDate = new Date(Date.UTC(currentYear, month + 1, 1, 0, 0, 0));  // Set end date to next month
 
   return { $gte: startDate, $lt: endDate };
 };
@@ -17,12 +20,12 @@ const getTransactions = async (req, res) => {
     const filters = {};
     
     if (month) {
-      filters.dateOfSale = getMonthDateRange(month);  //  filter for the month
+      filters.dateOfSale = getMonthDateRange(parseInt(month));  // filter for the month
     }
 
     if (search) {
       filters.$or = [
-        { title: { $regex: search, $options: 'i' } },  //  title search caseinsensitive
+        { title: { $regex: search, $options: 'i' } },  // title search case-insensitive
         { description: { $regex: search, $options: 'i' } },
         { price: { $regex: search, $options: 'i' } }
       ];
